@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Advanced WZL
-// @version        2.4
+// @version        2.5
 // @namespace      http://www.userscripts.org
 // @creator        SaWey
 // @description    Filter WZL fun page naar wens
@@ -10,52 +10,56 @@
 // ==/UserScript==
 
 
-//if(/.*postNew.*/.test(window.location.href)){
+function insertSC(){
+var textarea = document.getElementsByTagName("textarea")[0];
+var a = textarea
+var b = createlink(a);
+textarea.value = b;
+}
 
-    function insertSC(){
-    var textarea = document.getElementsByTagName("textarea")[0];
-    var a = textarea
-    var b = createlink(a);
-    textarea.value = b;
-    }
-    
-    function createlink(a){
-        
-        b = a.value.split("\n");
-        var c="";
-        for(i=0; i<b.length;i++){
-            //voor elke regel in de post/comment
-            if(/.*youtube\.com\/watch.*/.test(b[i])){
-                c += "[movie=http://www.youtube.com/v/" + b[i].split("=")[1].split("&")[0] + " w=640 h=400]\n" ;
-            } else if(/.*\.jpg/.test(b[i]) || /.*\.png/.test(b[i]) || /.*\.gif/.test(b[i]) || /.*\.bmp/.test(b[i])){
-                if(!/.*\[image\=.*/.test(b[i])){
-                    c+= "\[image="+ b[i] +"\]\n";
-                } else {c +=b[i] + "\n"}
-            } else {c +=b[i] + "\n"}
-        }
-        return c
-    }
-    
-    var parent_header = document.getElementsByClassName("editorcontrols")[0];
-    if(parent_header != null){
-        
-        var text = document.createElement("span");
-        text.innerHTML = ' ';
-        var imgSC = document.createElement("img");
-        imgSC.title = "Smart Content";
-        imgSC.src="http://wzl.be/imgs/tabs/balzak/balzak_bullet1.gif";
-        imgSC.border = 0;
-        imgSC.style.cursor = "pointer";
-        imgSC.addEventListener('click', insertSC , true);
-        parent_header.appendChild(text);
-        parent_header.appendChild(imgSC);
-    }
-//} 
+function createlink(a){
+	b = a.value.split("\n");
+	var c="";
+	for(i=0; i<b.length;i++){
+		//voor elke regel in de post/comment
+		if(/.*youtube\.com\/watch.*/.test(b[i])){
+			//regel is een youtube-link
+			c += "[movie=http://www.youtube.com/v/" + b[i].split("=")[1].split("&")[0] + " w=640 h=400]\n" ;
+		} else if(/.*\.jpg/.test(b[i]) || /.*\.png/.test(b[i]) || /.*\.gif/.test(b[i]) || /.*\.bmp/.test(b[i])){
+			//regel is een afbeelding
+			if(!/.*\[image\=.*/.test(b[i])){
+				c+= "\[image="+ b[i] +"\]\n";
+			} else {c +=b[i] + "\n"}
+		} else {c +=b[i] + "\n"}
+	}
+	return c
+}
+
+//we gaan in de post-editor
+var parent_header = document.getElementsByClassName("editorcontrols")[0];
+
+if(parent_header != null){
+	//als die class bestaat, voeg de knop toe
+	var text = document.createElement("span");
+	text.innerHTML = ' ';
+	var imgSC = document.createElement("img");
+	imgSC.title = "Smart Content";
+	imgSC.src="http://wzl.be/imgs/tabs/balzak/balzak_bullet1.gif";
+	imgSC.border = 0;
+	imgSC.style.cursor = "pointer";
+	imgSC.addEventListener('click', insertSC , true);
+	parent_header.appendChild(text);
+	parent_header.appendChild(imgSC);
+}
+
 
 if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.href) && !/.*freetime.*/.test(window.location.href) && !/.*sports.*/.test(window.location.href) ){
+	//als we in fun, babe of stud tab zitten
+	//blacklist opvragen aan GreaseMonkey
     var actief = GM_getValue("wzlBLA");
-    
+
     function addToBlacklist(e){
+		//waarde toevoegen aan blacklist
         var string = document.getElementById('blacklistMe').value;
         if(trim(string) == ""){
             alert("Gelieve een waarde in te vullen.");		
@@ -74,6 +78,7 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     }
     
     function blacklist(){
+		//blacklist uitvoeren
         var str = GM_getValue("wzlBL");
         strArr = "";
         if(str !=null){
@@ -82,14 +87,16 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
         var blacklist = new Array();
         for(n=0; n<strArr.length; n++){
             if(trim(strArr[n]) != ""){
+				//in elke record van blacklist staat nu een opgeslagen waarde
                 blacklist[n] = strArr[n];
             }
         }
         var tdArr = document.getElementsByTagName("td");
         for(i=0; i<tdArr.length;i++){
             if(tdArr[i].className=="center"){
+			//we zitten in de middelste kolom op wzl (aanpassen!! for loop er uit! met getElementsByClassName!!)
                 var  parent_td = tdArr[i];
-                var items = parent_td.getElementsByTagName("td");
+                var items = parent_td.getElementsByTagName("td");//kan ook veel korter, zie hierboven
                 for(o=0; o<items.length; o++){
                     for(p=0; p<blacklist.length; p++){
                         if(items[o].innerHTML.match(blacklist[p]) && blacklist[p] != null){
@@ -102,7 +109,7 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
         }
     }
     
-    function showBL(e){
+    function showBL(e){//toon de blacklist rechts
         var str = GM_getValue("wzlBL");
         var strArr = "";
         if(str !=null){
@@ -112,7 +119,6 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
         var bl = document.getElementById("blList");
         bl.innerHTML = "<br /> ";
         for(n=0; n<strArr.length; n++){
-            //alert(strArr[n])
             if(trim(strArr[n]) != "" && trim(strArr[n]) != null){
                 var imgv = document.createElement("img");
                 imgv.title = "Verwijder uit lijst!";
@@ -181,7 +187,7 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
         }
     }
     
-    function trim(value) {
+    function trim(value) {//inputwaarde trimmen uiteraard
       value = value.replace(/^\s+/,''); 
       value = value.replace(/\s+$/,'');
       return value;
@@ -209,7 +215,7 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
         titel.innerHTML = "Blacklist: ";
     }
     
-    function resetEntries(){
+    function resetEntries(){//alles wissen
         GM_setValue("wzlBL", "");
     }
     
@@ -240,13 +246,13 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     //extra filtermenu aanmaken
     
     var parent_td = document.getElementsByClassName("right")[0];
-    var parent_header = parent_td.getElementsByTagName("FORM");
+    var parent_header = parent_td.getElementsByTagName("FORM");//kan korter
     
     var br = document.createElement("BR");
     parent_header[0].appendChild(br);
     
     
-    var box = document.createElement("input");
+    var box = document.createElement("input");//activatieknop
     box.type = "Checkbox";
     box.id = "enableBL";
     box.name ="enableBL";
@@ -256,7 +262,7 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     //////////////////////////////////////////////
     var title = document.createElement("H2");
     //////////////////////////////////////////////
-    var imgf = document.createElement("img");
+    var imgf = document.createElement("img");//f-icoontje
     imgf.title = "Toon lijst";
     imgf.src = "http://www.wzl.be/imgs/tabs/fun/fun_icon.gif";
     imgf.border = 0;
@@ -265,7 +271,7 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     imgf.style.cursor = "pointer";
     imgf.addEventListener('click', showBL , true);
     //////////////////////////////////////////////
-    var whitelisticon = document.createElement("img");
+    var whitelisticon = document.createElement("img");//w-icoontje
     whitelisticon.id = "whitelisticon";
     whitelisticon.title = "Toggle whitelist";
     whitelisticon.src = "http://www.wzl.be/imgs/tabs/my/my_icon.gif";
@@ -275,7 +281,7 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     whitelisticon.style.cursor = "pointer";
     whitelisticon.addEventListener('click', activatewhitelist , true);
     //////////////////////////////////////////////
-    var blacklisticon = document.createElement("img");
+    var blacklisticon = document.createElement("img");//b-icoontje
     blacklisticon.id = "blacklisticon";
     blacklisticon.title = "Toggle blacklist";
     blacklisticon.src = "http://wzl.be/imgs/tabs/balzak/balzak_icon.gif";
@@ -294,7 +300,7 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     }
     
     
-    var text = document.createElement("span");
+    var text = document.createElement("span");//tekst
     text.innerHTML = "&nbsp;&nbsp;ADV FILTER &nbsp;&nbsp;&nbsp;";
     
     parent_header[0].appendChild(title);
@@ -315,14 +321,14 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     parent_header[0].appendChild(descr);
     
     
-    var input = document.createElement("input");
+    var input = document.createElement("input");//textinput
     input.type = "text";
     input.id = "blacklistMe";
     input.name = "blacklistMe";
     input.width = 130;
     parent_header[0].appendChild(input);
     
-    var img = document.createElement("img");
+    var img = document.createElement("img");//filter-icoontje
     img.id = "blacklistMeImg";
     img.title = "Voeg toe aan lijst!";
     img.src = "http://wzl.be/imgs/common/filter.gif";
@@ -336,10 +342,9 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     parent_header[0].appendChild(bl);
     
     
-    //resetknop aanmaken
-    var tdArr = document.getElementsByTagName("div");
+    var tdArr = document.getElementsByTagName("div");//resetknop aanmaken
     for(i=0; i<tdArr.length;i++){
-        if(tdArr[i].className=="footer"){
+        if(tdArr[i].className=="footer"){//kan korter, for loop moet weg
             //we zitten in de footer
             var  parent_td = tdArr[i];
             var reset = document.createElement("a");
