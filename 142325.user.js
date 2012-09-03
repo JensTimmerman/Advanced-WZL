@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Advanced WZL
-// @version        2.5
+// @version        2.6
 // @namespace      http://www.userscripts.org
 // @creator        SaWey
 // @description    Filter WZL fun page naar wens
@@ -30,7 +30,27 @@ function createlink(a){
 			if(!/.*\[image\=.*/.test(b[i])){
 				c+= "\[image="+ b[i] +"\]\n";
 			} else {c +=b[i] + "\n"}
-		} else {c +=b[i] + "\n"}
+		} else if(/.*www\..*\..*/.test(b[i])){
+            //regel is een link
+            if(!/.*\[link\=.*/.test(b[i])){
+                var text1 = b[i].split("http://")[0];
+                c+= text1 + "[link=http://";
+                if(/.*;.*/.test(b[i])){
+                    var link = b[i].split("http://")[1].split(";")[0];
+                    var linktext = b[i].split("http://")[1].split(";")[1];
+                    var text2 = b[i].split(";;")[1];
+                    c+= link +"]"+ linktext + "[/link]" + text2 + "\n";
+                } else {
+                    var link = b[i].split("http://")[1].split(" ")[0];
+                    var text2 = "";
+                    if(b[i].split("http://")[1].split(link)[1]!=null){
+                        var text2 = b[i].split("http://")[1].split(link)[1];
+                    }
+                    c+= link +"]"+ link + "[/link] " + text2 + "\n";
+                }
+			} else {c +=b[i] + "\n"}
+            
+        } else {c +=b[i] + "\n"}
 	}
 	return c
 }
@@ -54,7 +74,7 @@ if(parent_header != null){
 
 
 if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.href) && !/.*freetime.*/.test(window.location.href) && !/.*sports.*/.test(window.location.href) ){
-	//als we in fun, babe of stud tab zitten
+	//als we in fun, babe of stud tab zitten, dus niet in nieuwe post aanmaken, music tab, freetime tab of sportstab
 	//blacklist opvragen aan GreaseMonkey
     var actief = GM_getValue("wzlBLA");
 
@@ -91,22 +111,17 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
                 blacklist[n] = strArr[n];
             }
         }
-        var tdArr = document.getElementsByTagName("td");
-        for(i=0; i<tdArr.length;i++){
-            if(tdArr[i].className=="center"){
-			//we zitten in de middelste kolom op wzl (aanpassen!! for loop er uit! met getElementsByClassName!!)
-                var  parent_td = tdArr[i];
-                var items = parent_td.getElementsByTagName("td");//kan ook veel korter, zie hierboven
-                for(o=0; o<items.length; o++){
-                    for(p=0; p<blacklist.length; p++){
-                        if(items[o].innerHTML.match(blacklist[p]) && blacklist[p] != null){
-                            items[o].parentNode.style.display = "none";					
-                        }
-                    }
+        
+        var parent_td = document.getElementsByClassName("center")[0]; //de middelste kolom op wzl
+        var items = parent_td.getElementsByTagName("td");
+        for(o=0; o<items.length; o++){
+            for(p=0; p<blacklist.length; p++){
+                if(items[o].innerHTML.match(blacklist[p]) && blacklist[p] != null){
+                    items[o].parentNode.style.display = "none";					
                 }
-            
             }
-        }
+    }
+            
     }
     
     function showBL(e){//toon de blacklist rechts
@@ -245,8 +260,8 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     
     //extra filtermenu aanmaken
     
-    var parent_td = document.getElementsByClassName("right")[0];
-    var parent_header = parent_td.getElementsByTagName("FORM");//kan korter
+
+    var parent_header = document.getElementsByClassName("right")[0].getElementsByTagName("FORM");
     
     var br = document.createElement("BR");
     parent_header[0].appendChild(br);
@@ -342,17 +357,13 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     parent_header[0].appendChild(bl);
     
     
-    var tdArr = document.getElementsByTagName("div");//resetknop aanmaken
-    for(i=0; i<tdArr.length;i++){
-        if(tdArr[i].className=="footer"){//kan korter, for loop moet weg
-            //we zitten in de footer
-            var  parent_td = tdArr[i];
-            var reset = document.createElement("a");
-            reset.href="http://wzl.be";
-            reset.style.cursor = "pointer";
-            reset.innerHTML = " | Reset Wzl Adv Filter";
-            reset.addEventListener('click', resetEntries , true);
-            parent_td.appendChild(reset);     
-        }
-    }
+
+    //resetknop aanmaken
+    var  parent_td = document.getElementsByClassName("footer")[0];
+    var reset = document.createElement("a");
+    reset.href="http://wzl.be";
+    reset.style.cursor = "pointer";
+    reset.innerHTML = " | Reset Wzl Adv Filter";
+    reset.addEventListener('click', resetEntries , true);
+    parent_td.appendChild(reset);
 }
