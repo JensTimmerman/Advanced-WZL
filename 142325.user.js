@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Advanced WZL
-// @version        2.8
+// @version        2.9
 // @namespace      http://www.userscripts.org
 // @creator        SaWey
 // @description    Filter WZL fun page naar wens
@@ -8,7 +8,6 @@
 // @include        http://*wijfzonderlijf.be/*
 
 // ==/UserScript==
-
 
 function insertSC(){
 var textarea = document.getElementsByTagName("textarea")[0];
@@ -74,33 +73,26 @@ if(parent_header != null){
 	parent_header.appendChild(imgSC);
 }
 
-function zoek(a){
-  window.open("http://www.google.com/search?as_sitesearch=wzl.be&as_q="+a, '_blank');
-  window.focus();
-}
+
 
 //zoekmachine
 if(/.*f_search/.test(window.location.href)){
+    var fnzoek = document.createElement("script");
+    fnzoek.type="text/javascript";
+    fnzoek.innerHTML="function zoek(a){\nwindow.open(\"http://www.google.com/search?as_sitesearch=wzl.be&as_q=\"+a, '_blank');\nwindow.focus();\n}";
+    document.getElementsByTagName("head")[0].appendChild(fnzoek);
+    var parent_header = document.getElementsByTagName("form")[0];
+    parent_header.removeAttribute("action");
     var searchbutton = document.getElementsByClassName("button")[0];
-    
     var searchbox = document.getElementsByTagName("input")[0];
-    
-    parent_header = document.getElementsByClassName("bgwhite")[0].getElementsByTagName("form")[0];
-    parent_header.removeChild(searchbutton);
-    /*parent_header.innerHTML = "";        
-    var search = document.createElement("input");
-    search.type"Input";
-    search.name="keywords";
-    search.size="40";*/
-    var searchbutton2 = document.createElement("input");
-    searchbutton2.type="Submit";
-    searchbutton2.value="Zoeken!";
-    searchbutton2.setAttribute("class","button");
-    //parent_header.appendChild(search);
-    //parent_header.appendChild(searchbutton);*/
-    searchbutton2.addEventListener('click', zoek(searchbox.value) , true);
-    parent_header.appendChild(searchbutton2);
-    
+    //parent_header.removeChild(searchbutton);
+    //var searchbutton2 = document.createElement("input");
+    //searchbutton2.type="Submit";
+    searchbutton.value="Zoeken!!!!!";
+    //searchbutton2.setAttribute("class","button");
+    searchbutton.setAttribute("onClick","zoek(document.getElementsByTagName(\"input\")[0].value)");
+    //searchbutton2.addEventListener('click', zoek(searchbox.value) , true);
+    //parent_header.appendChild(searchbutton2);
 }
    
 
