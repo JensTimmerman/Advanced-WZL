@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Advanced WZL
-// @version        2.7
+// @version        2.8
 // @namespace      http://www.userscripts.org
 // @creator        SaWey
 // @description    Filter WZL fun page naar wens
@@ -52,7 +52,8 @@ function createlink(a){
             
         } else {c +=b[i] + "\n"}
 	}
-        c=c.slice(0,[c.length - 1]);
+    
+    c=c.slice(0,[c.length - 1]);
 	return c
 }
 
@@ -73,6 +74,35 @@ if(parent_header != null){
 	parent_header.appendChild(imgSC);
 }
 
+function zoek(a){
+  window.open("http://www.google.com/search?as_sitesearch=wzl.be&as_q="+a, '_blank');
+  window.focus();
+}
+
+//zoekmachine
+if(/.*f_search/.test(window.location.href)){
+    var searchbutton = document.getElementsByClassName("button")[0];
+    
+    var searchbox = document.getElementsByTagName("input")[0];
+    
+    parent_header = document.getElementsByClassName("bgwhite")[0].getElementsByTagName("form")[0];
+    parent_header.removeChild(searchbutton);
+    /*parent_header.innerHTML = "";        
+    var search = document.createElement("input");
+    search.type"Input";
+    search.name="keywords";
+    search.size="40";*/
+    var searchbutton2 = document.createElement("input");
+    searchbutton2.type="Submit";
+    searchbutton2.value="Zoeken!";
+    searchbutton2.setAttribute("class","button");
+    //parent_header.appendChild(search);
+    //parent_header.appendChild(searchbutton);*/
+    searchbutton2.addEventListener('click', zoek(searchbox.value) , true);
+    parent_header.appendChild(searchbutton2);
+    
+}
+   
 
 if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.href) && !/.*freetime.*/.test(window.location.href) && !/.*sports.*/.test(window.location.href) ){
 	//als we in fun, babe of stud tab zitten, dus niet in nieuwe post aanmaken, music tab, freetime tab of sportstab
