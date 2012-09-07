@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Advanced WZL
-// @version        2.9
+// @version        2.13
 // @namespace      http://www.userscripts.org
 // @creator        SaWey
 // @description    Filter WZL fun page naar wens
@@ -8,6 +8,156 @@
 // @include        http://*wijfzonderlijf.be/*
 
 // ==/UserScript==
+//beta voor versie 3
+
+//Browser detection
+var BrowserDetect = {
+	init: function () {
+		this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+		this.version = this.searchVersion(navigator.userAgent)
+			|| this.searchVersion(navigator.appVersion)
+			|| "an unknown version";
+		this.OS = this.searchString(this.dataOS) || "an unknown OS";
+	},
+	searchString: function (data) {
+		for (var i=0;i<data.length;i++)	{
+			var dataString = data[i].string;
+			var dataProp = data[i].prop;
+			this.versionSearchString = data[i].versionSearch || data[i].identity;
+			if (dataString) {
+				if (dataString.indexOf(data[i].subString) != -1)
+					return data[i].identity;
+			}
+			else if (dataProp)
+				return data[i].identity;
+		}
+	},
+	searchVersion: function (dataString) {
+		var index = dataString.indexOf(this.versionSearchString);
+		if (index == -1) return;
+		return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+	},
+	dataBrowser: [
+		{
+			string: navigator.userAgent,
+			subString: "Chrome",
+			identity: "Chrome"
+		},
+		{ 	string: navigator.userAgent,
+			subString: "OmniWeb",
+			versionSearch: "OmniWeb/",
+			identity: "OmniWeb"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Apple",
+			identity: "Safari",
+			versionSearch: "Version"
+		},
+		{
+			prop: window.opera,
+			identity: "Opera",
+			versionSearch: "Version"
+		},
+		{
+			string: navigator.vendor,
+			subString: "iCab",
+			identity: "iCab"
+		},
+		{
+			string: navigator.vendor,
+			subString: "KDE",
+			identity: "Konqueror"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Firefox",
+			identity: "Firefox"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Camino",
+			identity: "Camino"
+		},
+		{		// for newer Netscapes (6+)
+			string: navigator.userAgent,
+			subString: "Netscape",
+			identity: "Netscape"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "MSIE",
+			identity: "Explorer",
+			versionSearch: "MSIE"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Gecko",
+			identity: "Mozilla",
+			versionSearch: "rv"
+		},
+		{ 		// for older Netscapes (4-)
+			string: navigator.userAgent,
+			subString: "Mozilla",
+			identity: "Netscape",
+			versionSearch: "Mozilla"
+		}
+	],
+	dataOS : [
+		{
+			string: navigator.platform,
+			subString: "Win",
+			identity: "Windows"
+		},
+		{
+			string: navigator.platform,
+			subString: "Mac",
+			identity: "Mac"
+		},
+		{
+			   string: navigator.userAgent,
+			   subString: "iPhone",
+			   identity: "iPhone/iPod"
+	    },
+		{
+			string: navigator.platform,
+			subString: "Linux",
+			identity: "Linux"
+		}
+	]
+
+};
+BrowserDetect.init();
+//controleer op firefox nightly (18) of chrome
+var is_ffnightly=false;
+if(BrowserDetect.browser=="Firefox" && BrowserDetect.version>=18){
+	is_ffnightly=true;
+}
+
+//rest van script
+//controleer op chrome of ffnightly, zoja, maak dan youtube links embed, voor fullscreen te enablen
+
+var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+if(is_chrome || is_ffnightly){
+    var embedd = document.getElementsByTagName("embed");
+    if(embedd!=null){
+        for(i=0; i<embedd.length;i++){
+            var embed = embedd[i];
+            var parent = embed.parentNode;
+            var src = embed.getAttribute("src");
+            var srcv = src.split("/v/")[1];
+            var vid = document.createElement("embed");
+            vid.setAttribute("src","http://www.youtube.com/embed/"+srcv);
+            vid.setAttribute("width","640");
+            vid.setAttribute("height","400");
+            var br = document.createElement("br");
+            parent.appendChild(br);
+            parent.insertBefore(vid,embed);
+            parent.removeChild(embed);
+            parent.getElementsByTagName("a");
+        }
+    }
+}
 
 function insertSC(){
 var textarea = document.getElementsByTagName("textarea")[0];
@@ -24,7 +174,7 @@ function createlink(a){
 		if(/.*youtube\.com\/watch.*/.test(b[i])){
 			//regel is een youtube-link
 			c += "[movie=http://www.youtube.com/v/" + b[i].split("=")[1].split("&")[0] + " w=640 h=400]\n" ;
-		} else if(/.*\.jpg/.test(b[i]) || /.*\.png/.test(b[i]) || /.*\.gif/.test(b[i]) || /.*\.bmp/.test(b[i])){
+		} else if(/.*\.jpg/.test(b[i].toLowerCase()) || /.*\.png/.test(b[i].toLowerCase()) || /.*\.gif/.test(b[i].toLowerCase()) || /.*\.bmp/.test(b[i].toLowerCase())){
 			//regel is een afbeelding
 			if(!/.*\[image\=.*/.test(b[i])){
 				c+= "\[image="+ b[i] +"\]\n";
