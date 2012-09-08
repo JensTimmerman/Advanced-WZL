@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Advanced WZL
-// @version        2.13
+// @version        2.14
 // @namespace      http://www.userscripts.org
 // @creator        SaWey
 // @description    Filter WZL fun page naar wens
@@ -145,7 +145,7 @@ if(is_chrome || is_ffnightly){
             var embed = embedd[i];
             var parent = embed.parentNode;
             var src = embed.getAttribute("src");
-            var srcv = src.split("/v/")[1];
+            var srcv = src.split("/v/")[1].split("&")[0];
             var vid = document.createElement("embed");
             vid.setAttribute("src","http://www.youtube.com/embed/"+srcv);
             vid.setAttribute("width","640");
