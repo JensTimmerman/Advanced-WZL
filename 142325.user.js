@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Advanced WZL
-// @version        2.14
+// @version        2.15
 // @namespace      http://www.userscripts.org
 // @creator        SaWey
 // @description    Filter WZL fun page naar wens
@@ -179,7 +179,7 @@ function createlink(a){
 			if(!/.*\[image\=.*/.test(b[i])){
 				c+= "\[image="+ b[i] +"\]\n";
 			} else {c +=b[i] + "\n"}
-		} else if(/.*www\..*\..*/.test(b[i])){
+		} else if(/.*www\..*\..*/.test(b[i]) || /.*http\:\/\/.*\..*/.test(b[i])){
             //regel is een link
             if(!/.*\[link\=.*/.test(b[i])){
                 var text1 = b[i].split("http://")[0];
