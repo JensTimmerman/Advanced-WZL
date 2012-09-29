@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name           Advanced WZL
-// @version        2.15
+// @version        2.16
 // @namespace      http://www.userscripts.org
-// @creator        SaWey
+// @creator        SaWey+Efari
 // @description    Filter WZL fun page naar wens
 // @include        http://*wzl.be/*
 // @include        http://*wijfzonderlijf.be/*
@@ -134,36 +134,87 @@ if(BrowserDetect.browser=="Firefox" && BrowserDetect.version>=18){
 	is_ffnightly=true;
 }
 
-//rest van script
-//controleer op chrome of ffnightly, zoja, maak dan youtube links embed, voor fullscreen te enablen
 
-var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-if(is_chrome || is_ffnightly){
-    var embedd = document.getElementsByTagName("embed");
-    if(embedd!=null){
-        for(i=0; i<embedd.length;i++){
-            var embed = embedd[i];
-            var parent = embed.parentNode;
-            var src = embed.getAttribute("src");
-            var srcv = src.split("/v/")[1].split("&")[0];
-            var vid = document.createElement("embed");
-            vid.setAttribute("src","http://www.youtube.com/embed/"+srcv);
-            vid.setAttribute("width","640");
-            vid.setAttribute("height","400");
-            var br = document.createElement("br");
-            parent.appendChild(br);
-            parent.insertBefore(vid,embed);
-            parent.removeChild(embed);
-            parent.getElementsByTagName("a");
+//rest van script
+    //controleer op chrome of ffnightly, zoja, maak dan youtube links embed, voor fullscreen te enablen
+if(/.*post.*/.test(window.location.href)){
+    //dit enkel doen op een post
+    var fnresize = document.createElement("script");
+    fnresize.type="text/javascript";
+    fnresize.innerHTML="var embedddd = document.getElementsByTagName('embed');\n\
+    function resize(i,bln){\n\
+    if(bln){\n\
+        embedddd[i].setAttribute('width',embedddd[i].width*1.1);\n\
+        embedddd[i].setAttribute('height',embedddd[i].height*1.1);\n\
+    }else{\n\
+        embedddd[i].setAttribute('width',embedddd[i].width*0.9);\n\
+        embedddd[i].setAttribute('height',embedddd[i].height*0.9);\n\
+    }\n\
+}";
+    document.getElementsByTagName("head")[0].appendChild(fnresize);
+    
+    var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+    if(is_chrome || is_ffnightly){
+        var embedd = document.getElementsByTagName("embed");
+        if(embedd!=null){
+            for(i=0; i<embedd.length;i++){
+                var embed = embedd[i];
+                var parent = embed.parentNode;
+                var src = embed.getAttribute("src");
+                var srcv = src.split("/v/")[1].split("&")[0];
+                var vid = document.createElement("embed");
+                vid.setAttribute("src","http://www.youtube.com/embed/"+srcv);
+                vid.setAttribute("width","640");
+                vid.setAttribute("height","400");
+                var br = document.createElement("br");
+                parent.appendChild(br);
+                parent.insertBefore(vid,embed);
+                parent.removeChild(embed);
+                parent.getElementsByTagName("a");
+            }
         }
     }
-}
+    //make resize button
+    var jsresize = document.createElement("script");
+    jsresize.type="text/javascript";
+    jsresize.innerHTML='var embeddd = document.getElementsByTagName("embed");\n\
+    var j=0;\n\
+    if(embeddd!=null){\n\
+    var embed = embeddd[0];\n\
+    var parent = embed.parentNode\n\
+    var parent2=parent;\n\
+    for(i=0;i<embeddd.length;i++){\n\
+    embed = embeddd[i];\n\
+    parent = embed.parentNode\n\
+    if(parent!=parent2){\n\
+        j=0;}\n\
+    var parent2=parent;\n\
+    var plus = document.createElement("span");\n\
+    var min = document.createElement("span");\n\
+    var br = document.createElement("br");\n\
+    plus.innerHTML = "+";\n\
+    plus.style.cursor = "pointer";\n\
+    plus.setAttribute("onClick","resize("+i+",true)");\n\
+    min.innerHTML = "-";\n\
+    min.style.cursor = "pointer";\n\
+    min.setAttribute("onClick","resize("+i+",false)");\n\
+    parent.insertBefore(plus,parent.getElementsByTagName("embed")[j]);\n\
+    parent.insertBefore(br,parent.getElementsByTagName("embed")[j]);\n\
+    parent.insertBefore(min,parent.getElementsByTagName("embed")[j]);\n\
+    parent.insertBefore(br,parent.getElementsByTagName("embed")[j]);\n\
+    j=j+1;\n\
+}\n\
+}';
+    document.getElementsByTagName("head")[0].appendChild(jsresize);
 
-function insertSC(){
-var textarea = document.getElementsByTagName("textarea")[0];
-var a = textarea
-var b = createlink(a);
-textarea.value = b;
+}
+    
+    
+    function insertSC(){
+    var textarea = document.getElementsByTagName("textarea")[0];
+    var a = textarea
+    var b = createlink(a);
+    textarea.value = b;
 }
 
 function createlink(a){
@@ -249,6 +300,8 @@ if(/.*f_search/.test(window.location.href)){
 if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.href) && !/.*freetime.*/.test(window.location.href) && !/.*sports.*/.test(window.location.href) ){
 	//als we in fun, babe of stud tab zitten, dus niet in nieuwe post aanmaken, music tab, freetime tab of sportstab
 	//blacklist opvragen aan GreaseMonkey
+    
+    
     var actief = GM_getValue("wzlBLA");
 
     function addToBlacklist(e){
@@ -539,4 +592,6 @@ if(!/.*post.*/.test(window.location.href) && !/.*music.*/.test(window.location.h
     reset.innerHTML = " | Reset Wzl Adv Filter";
     reset.addEventListener('click', resetEntries , true);
     parent_td.appendChild(reset);
+} else {
+
 }
